@@ -1,12 +1,29 @@
 var validator = require('validator')
 var isEmpty = require('./is.empty')
 
-module.exports = function validateRegisterInput(data) {
+module.exports = function validateLoginInput(data) {
     let errors = {}
 
-    if (!validator.isLength(data.name, { min: 2, max: 30 })) {
-        errors.name = "Name Must be between 2 and 30 characters"
+    data.email = !isEmpty(data.email) ? data.email : '';
+    data.password = !isEmpty(data.password) ? data.password : '';
+
+
+
+
+    if (!validator.isEmail(data.email)) {
+        errors.email = "Email is invalid"
     }
+
+
+    if (validator.isEmpty(data.email)) {
+        errors.email = "Email field is required"
+    }
+
+    
+    if (validator.isEmpty(data.password)) {
+        errors.password = "Password field is required"
+    }
+
     return {
         errors,
         isValid: isEmpty(errors)

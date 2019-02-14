@@ -9,6 +9,7 @@ var jwt = require('jsonwebtoken')
 var router = express.Router()
 
 var validateRegisterInput = require('../../validation/register')
+var validateLoginInput = require('../../validation/login')
 
 router.get('/test', (req, res) => {
     res.json({ msg: 'User Successfull' })
@@ -18,14 +19,14 @@ router.post('/register', (req, res) => {
     const { errors, isValid } = validateRegisterInput(req.body)
 
     //If error
-    if(!isValid){
+    if (!isValid) {
         res.status(400).json(errors)
     }
 
     User.findOne({ email: req.body.email })
         .then(user => {
             if (user) {
-                errors.email='Email already exist';
+                errors.email = 'Email already exist';
                 return res.status(400).json(errors)
             }
             else {
@@ -60,6 +61,13 @@ router.post('/register', (req, res) => {
 })
 
 router.post('/login', (req, res) => {
+    const { errors, isValid } = validateLoginInput(req.body)
+
+    //If error
+    if (!isValid) {
+        res.status(400).json(errors)
+    }
+
     const email = req.body.email;
     const password = req.body.password;
 
@@ -69,7 +77,8 @@ router.post('/login', (req, res) => {
         .then(user => {
             //Check for user
             if (!user) {
-                return res.status(400).json({ email: 'Email not Found' })
+                errors.email = 'Email not found'
+                return res.status(400).json(errors)
             }
 
             //check Password
@@ -91,7 +100,8 @@ router.post('/login', (req, res) => {
 
                     }
                     else {
-                        return res.status(400).json({ password: 'password Not match' })
+                        errors.password='Password not match'
+                        return res.status(400).json(errors)
                     }
                 })
         })
