@@ -5,17 +5,28 @@ var garvatar = require('gravatar')
 var bcrypt = require('bcryptjs')
 var passport = require('passport')
 var jwt = require('jsonwebtoken')
+
 var router = express.Router()
+
+var validateRegisterInput = require('../../validation/register')
 
 router.get('/test', (req, res) => {
     res.json({ msg: 'User Successfull' })
 })
 
 router.post('/register', (req, res) => {
+    const { errors, isValid } = validateRegisterInput(req.body)
+
+    //If error
+    if(!isValid){
+        res.status(400).json(errors)
+    }
+
     User.findOne({ email: req.body.email })
         .then(user => {
             if (user) {
-                return res.status(400).json({ email: 'Email Already Exist' })
+                errors.email='Email already exist';
+                return res.status(400).json(errors)
             }
             else {
                 const avatar = garvatar.url(req.body.email, {
@@ -32,7 +43,7 @@ router.post('/register', (req, res) => {
 
                 bcrypt.genSalt(10, (err, salt) => {
                     bcrypt.hash(newUser.password, salt, (err, hash) => {
-                        if (err) throw err
+                        if (err) throw err;
                         newUser.password = hash;
                         newUser.save()
                             .then((user) => {
